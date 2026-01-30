@@ -22,13 +22,26 @@ pub fn get_album_art_url(path: &str) -> Option<String> {
         }
     }
 
+    println!("Attempting to read art from: {:?}", path);
     // Use read_from_path from lofty specific to 0.15? 
-    // Usually lofty::read_from_path works.
-    let tagged_file = lofty::read_from_path(path).ok()?;
-    let tag = tagged_file.primary_tag()?;
+    let tagged_file = match lofty::read_from_path(path) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Failed to read file: {}", e);
+            return None;
+        }
+    };
+    let tag = match tagged_file.primary_tag() {
+        Some(t) => t,
+        None => {
+            println!("No primary tag found");
+            return None;
+        }
+    };
 
     // Pictures are in tag.pictures()
     let pictures = tag.pictures();
+    println!("Found {} pictures", pictures.len());
     
     // Explicitly finding cover front
     let picture = pictures.iter().find(|p| p.pic_type() == PictureType::CoverFront)
@@ -45,8 +58,10 @@ pub fn get_album_art_url(path: &str) -> Option<String> {
         MimeType::Gif => "image/gif",
         _ => "application/octet-stream",
     };
+    println!("Uploading art ({} bytes, {})...", data.len(), mime_str);
 
-    let url = upload_to_0x0st(data, mime_str)?;
+    let url = upload_to_litterbox(data, mime_str)?;
+    println!("Uploaded Art URL: {}", url);
     
     if let Ok(mut cache) = URL_CACHE.lock() {
         cache.insert(path.to_str().unwrap_or_default().to_string(), url.clone());
@@ -55,33 +70,41 @@ pub fn get_album_art_url(path: &str) -> Option<String> {
     Some(url)
 }
 
-fn upload_to_0x0st(data: &[u8], mime: &str) -> Option<String> {
+fn upload_to_litterbox(data: &[u8], mime: &str) -> Option<String> {
     let client = Client::new();
     
-    // We must provide a filename and mime for 0x0.st to process it correctly
-    // Mime is crucial.
+    // Litterbox expects 'reqtype=fileupload', 'time=1h', and 'fileToUpload'.
+    // We'll use 12h just to be safe.
     let part = multipart::Part::bytes(data.to_vec())
         .file_name("art.jpg") 
         .mime_str(mime).ok()?;
 
     let form = multipart::Form::new()
-        .part("file", part);
+        .text("reqtype", "fileupload")
+        .text("time", "12h") 
+        .part("fileToUpload", part);
 
-    let res = client.post("https://0x0.st")
+    let res = match client.post("https://litterbox.catbox.moe/resources/internals/api.php")
         .multipart(form)
-        .send().ok()?;
+        .send() {
+            Ok(r) => r,
+            Err(e) => {
+                println!("Upload failed: {}", e);
+                return None;
+            }
+        };
 
     if res.status().is_success() {
         let body = res.text().ok()?;
-        // 0x0.st returns the URL in body, trimmed.
         let url = body.trim().to_string();
-        // Check if it looks like a URL
         if url.starts_with("http") {
              Some(url)
         } else {
+             println!("Invalid response from Litterbox: {}", url);
              None
         }
     } else {
+        println!("Litterbox returned status: {}", res.status());
         None
     }
 }
