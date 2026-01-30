@@ -1,8 +1,11 @@
+<p align="center">
+  <img src="assets/logo.png" alt="MPD Presence Logo" width="200">
+</p>
+
 # MPD Presence 🎶
 
 A lightweight Rust application that bridges **MPD (Music Player Daemon)** with **Discord Rich Presence**. It automatically displays your currently playing song, artist, and album, along with **embedded album art**.
 
-![Discord Rich Presence](https://raw.githubusercontent.com/r3dg0d/mpd-presence/master/screenshot.png) *(Placeholder if you add one)*
 
 ## ✨ Features
 
