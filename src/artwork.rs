@@ -1,4 +1,5 @@
-use lofty::{TaggedFileExt, PictureType, MimeType};
+use lofty::file::TaggedFileExt;
+use lofty::picture::{PictureType, MimeType};
 use std::path::Path;
 use reqwest::blocking::Client;
 use reqwest::blocking::multipart;
@@ -58,6 +59,7 @@ fn extract_and_upload_local(path: &Path) -> Option<String> {
     }
 
     println!("Attempting to read art from: {:?}", path);
+    // read_from_path reads file and parses it
     let tagged_file = lofty::read_from_path(path).ok()?;
     let tag = tagged_file.primary_tag()?;
 
@@ -67,7 +69,7 @@ fn extract_and_upload_local(path: &Path) -> Option<String> {
     }
 
     let picture = pictures.iter()
-        .find(|p| p.pic_type() == PictureType::CoverFront)
+        .find(|p: &&lofty::picture::Picture| p.pic_type() == PictureType::CoverFront)
         .or_else(|| pictures.first())?;
 
     let data = picture.data();
