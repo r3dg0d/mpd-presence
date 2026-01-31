@@ -52,6 +52,12 @@ You can configure the application via environment variables or by editing the se
 - `DISCORD_APP_ID`: Your Discord Application ID (Defaults to hardcoded one).
 - `MPD_MUSIC_DIR`: Path to your music library (Defaults to `~/Music`).
 
+## 🔧 Troubleshooting
+
+- **No Presence?** Discord must be running locally.
+- **No Album Art?** Check if your audio files have embedded metadata (`CoverFront`).
+- **Connection Refused?** Ensure MPD is listening on port `6600`.
+
 ## 🛠️ Development
 
 To run locally with debug logging:
