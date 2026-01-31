@@ -76,11 +76,11 @@ fn extract_and_upload_local(path: &Path) -> Option<String> {
     let mime_enum = picture.mime_type();
     
     let mime_str = match mime_enum {
-        MimeType::Png => "image/png",
-        MimeType::Jpeg => "image/jpeg",
-        MimeType::Tiff => "image/tiff",
-        MimeType::Bmp => "image/bmp",
-        MimeType::Gif => "image/gif",
+        Some(MimeType::Png) => "image/png",
+        Some(MimeType::Jpeg) => "image/jpeg",
+        Some(MimeType::Tiff) => "image/tiff",
+        Some(MimeType::Bmp) => "image/bmp",
+        Some(MimeType::Gif) => "image/gif",
         _ => "application/octet-stream",
     };
 
