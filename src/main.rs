@@ -49,9 +49,14 @@ fn run_loop(app_id: &str, music_dir: PathBuf) -> Result<(), Box<dyn Error>> {
             
             let art_url = if let Some(rel_path) = &song.file_path {
                 let abs_path = mpd.get_absolute_path(rel_path);
-                artwork::get_album_art_url(abs_path.to_str().unwrap_or_default())
+                artwork::get_album_art_url(
+                    abs_path.to_str().unwrap_or_default(),
+                    &song.artist,
+                    &song.album
+                )
             } else {
-                None
+                // Even without a file path, we can try web search
+                artwork::get_album_art_url("", &song.artist, &song.album)
             };
 
             discord.update_presence(
