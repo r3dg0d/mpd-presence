@@ -18,7 +18,8 @@ struct ItunesResponse {
 
 #[derive(Deserialize)]
 struct ItunesResult {
-    artworkUrl100: String,
+    #[serde(rename = "artworkUrl100")]
+    artwork_url100: String,
 }
 
 pub fn get_album_art_url(path: &str, artist: &str, album: &str) -> Option<String> {
@@ -109,7 +110,7 @@ fn search_itunes(artist: &str, album: &str) -> Option<String> {
     
     if let Some(result) = data.results.first() {
         // Upgrade quality 100x100 -> 600x600
-        let hq_url = result.artworkUrl100.replace("100x100bb", "600x600bb");
+        let hq_url = result.artwork_url100.replace("100x100bb", "600x600bb");
         println!("Found web art: {}", hq_url);
         Some(hq_url)
     } else {
